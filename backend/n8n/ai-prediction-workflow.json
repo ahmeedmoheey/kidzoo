@@ -1,0 +1,90 @@
+{
+  "id": "kidzooAiPred001",
+  "name": "KidZoo AI Prediction",
+  "description": "Predict visual perception status from child session trials for Laravel dashboard.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-prediction",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4b6d742f-b2ea-4f57-88f1-59b046be8d91",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "3f7f5f30-7b2e-4b5c-a4fa-7de1e253f5db"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst trials = Array.isArray(body.trials) ? body.trials : [];\n\nconst trialCount = trials.length;\nconst correctCount = trials.filter((trial) => Number(trial.Correct ?? trial.correct ?? 0) === 1).length;\nconst totalErrors = trials.reduce((sum, trial) => sum + Number(trial.Errors ?? trial.errors ?? 0), 0);\nconst totalMissed = trials.reduce((sum, trial) => sum + Number(trial.Missed_Targets ?? trial.missed_targets ?? 0), 0);\nconst avgReaction = trialCount > 0 ? trials.reduce((sum, trial) => sum + Number(trial.Reaction_Time_ms ?? trial.reaction_time_ms ?? 0), 0) / trialCount : 0;\nconst weakSkills = [...new Set(trials.filter((trial) => Number(trial.Errors ?? trial.errors ?? 0) > 0 || Number(trial.Missed_Targets ?? trial.missed_targets ?? 0) > 0).map((trial) => trial.Task_Type ?? trial.task_type).filter(Boolean))];\n\nconst accuracy = trialCount > 0 ? (correctCount / trialCount) * 100 : 0;\nlet status = 'normal';\nlet label = 'Normal Child';\nlet confidence = Math.min(0.98, Math.max(0.55, accuracy / 100));\n\nif (trialCount === 0) {\n  confidence = 0;\n} else if (accuracy < 60 || totalErrors >= Math.max(3, Math.ceil(trialCount / 2)) || totalMissed >= Math.max(2, Math.ceil(trialCount / 3)) || avgReaction > 2500) {\n  status = 'disorder';\n  label = 'Visual Perception Disorder Detected';\n  confidence = Math.min(0.97, Math.max(0.65, 1 - accuracy / 100 + Math.min(totalErrors * 0.03, 0.15)));\n}\n\nconst probDisorder = status === 'disorder' ? confidence : Math.max(0.02, 1 - confidence);\nconst probNormal = status === 'normal' ? confidence : Math.max(0.02, 1 - confidence);\nconst trainingPlan = status === 'disorder' ? ['Play visual tracking games for 10 minutes daily.', 'Repeat matching exercises with fewer distractions.', 'Monitor progress over the next 7 days.'] : ['Keep playing a mix of matching and tracking games.', 'Increase difficulty gradually to maintain progress.'];\n\nreturn [{json: {status, label, confidence: Number(confidence.toFixed(4)), prob_normal: Number(probNormal.toFixed(4)), prob_disorder: Number(probDisorder.toFixed(4)), weak_skills: weakSkills, training_plan: trainingPlan, trials_count: trialCount, model_version: 'n8n-rule-v1', metrics: {accuracy: Number(accuracy.toFixed(2)), correct_count: correctCount, errors_count: totalErrors, missed_count: totalMissed, avg_reaction_time_ms: Number(avgReaction.toFixed(2))}}}];"
+      },
+      "id": "5e5afc0e-295e-4f12-9f1b-818cdf20d65e",
+      "name": "Build Prediction",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "8238f18a-634b-428b-b2db-cae4d6fd1ca0",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Prediction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prediction": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "0b0ce8f8-eeb2-42d7-bf31-72e75409c72d",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "tags": []
+}

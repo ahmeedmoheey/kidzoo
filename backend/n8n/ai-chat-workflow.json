@@ -1,0 +1,90 @@
+{
+  "id": "vac06xg55SuQQhPW",
+  "name": "AI Chat Webhook",
+  "description": "Kid-friendly chatbot webhook for Laravel child chat.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "67aa9b70-7615-413a-b488-6a75007557b2",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "ea0bff31-f0e7-4f4e-aef4-97da760d9cb0"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst message = String(body.message ?? '').trim();\nconst childName = String(body.child_name ?? 'friend').trim() || 'friend';\nconst lower = message.toLowerCase();\n\nlet reply = `Hello ${childName}! Let's learn and play together.`;\n\nif (lower.includes('hello') || lower.includes('hi')) {\n  reply = `Hello ${childName}! Ready for a fun game?`;\n} else if (lower.includes('shape')) {\n  reply = 'Shapes are fun. Try matching the same shapes together.';\n} else if (lower.includes('color')) {\n  reply = 'Colors can help us spot patterns. Can you name your favorite color?';\n} else if (lower.includes('maze')) {\n  reply = 'The maze game helps with focus and visual tracking. Give it a try.';\n} else if (lower.includes('game') || lower.includes('play')) {\n  reply = `Let's play, ${childName}! You can try matching, maze, or puzzle games.`;\n} else if (lower.includes('help')) {\n  reply = 'I can help you choose a game, practice shapes, colors, and cheer you on.';\n} else if (lower.includes('bye')) {\n  reply = `Bye ${childName}! Come back soon for more fun.`;\n} else if (message.length > 0) {\n  const options = [\n    `Great job, ${childName}! Tell me more.`,\n    'That sounds interesting. Do you want to play a game now?',\n    'Awesome! We can practice shapes, colors, or visual tracking together.',\n    'You are doing well. Let us keep learning step by step.'\n  ];\n  reply = options[message.length % options.length];\n}\n\nreturn [{ json: { reply, message: { message: reply } } }];"
+      },
+      "id": "3f86ad5f-e48a-4b03-824c-6ba0e9098574",
+      "name": "Build Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "38f090dd-b7ec-417a-a5a7-f04f8aaef15c",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Reply": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "8b3f3f0b-6d7f-4b90-8f66-5897fbb6e6f1",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "tags": []
+}

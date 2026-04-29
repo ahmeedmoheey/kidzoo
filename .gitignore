@@ -1,0 +1,30 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Archives
+*.zip
+
+# Environment files
+.env
+backend/.env
+ml_service/.env
+
+# Laravel generated dependencies and build output
+backend/vendor/
+backend/node_modules/
+backend/public/build/
+backend/public/hot
+backend/public/storage
+backend/storage/*.key
+backend/storage/pail
+
+# Python generated files
+ml_service/venv/
+ml_service/__pycache__/
+ml_service/.pytest_cache/
+ml_service/.mypy_cache/
+ml_service/.ruff_cache/
+ml_service/*.pyc

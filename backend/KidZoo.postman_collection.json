@@ -1,0 +1,314 @@
+{
+  "info": {
+    "name": "KidZoo API",
+    "description": "Full API collection for the KidZoo graduation project. Set the base_url variable to http://127.0.0.1:8000/api.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api" },
+    { "key": "parent_token", "value": "" },
+    { "key": "child_token", "value": "" },
+    { "key": "reset_token", "value": "" },
+    { "key": "session_id", "value": "" },
+    { "key": "child_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health",
+        "header": [{ "key": "Accept", "value": "application/json" }]
+      }
+    },
+    {
+      "name": "Parent - Register",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/parent/register",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Abdelaty Ahmed\",\n  \"email\": \"abdelaty@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"+201000000000\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Parent - Verify Email OTP",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/parent/verify-email",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"abdelaty@example.com\",\n  \"otp\": \"123456\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Parent - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) pm.collectionVariables.set('parent_token', res.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/parent/login",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"parent@kidzoo.test\",\n  \"password\": \"password123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Parent - Forgot Password",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/parent/forgot-password",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{ \"email\": \"parent@kidzoo.test\" }" }
+      }
+    },
+    {
+      "name": "Parent - Verify Reset OTP",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.reset_token) pm.collectionVariables.set('reset_token', res.reset_token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/parent/verify-reset-otp",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"parent@kidzoo.test\",\n  \"otp\": \"123456\"\n}" }
+      }
+    },
+    {
+      "name": "Parent - Reset Password",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/parent/reset-password",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{reset_token}}" },
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"password\": \"newpass123\",\n  \"password_confirmation\": \"newpass123\"\n}" }
+      }
+    },
+    {
+      "name": "Parent - Me",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/parent/me",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{parent_token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ]
+      }
+    },
+    {
+      "name": "Parent - Update Profile",
+      "request": {
+        "method": "PUT",
+        "url": "{{base_url}}/parent/profile",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{parent_token}}" },
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Name\",\n  \"language\": \"ar\"\n}" }
+      }
+    },
+    {
+      "name": "Parent - List Children",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/parent/children",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{parent_token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ]
+      }
+    },
+    {
+      "name": "Parent - Create Child",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/parent/children",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{parent_token}}" },
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sara\",\n  \"username\": \"sara\",\n  \"password\": \"kids1234\",\n  \"password_confirmation\": \"kids1234\",\n  \"age\": 7,\n  \"gender\": \"girl\"\n}" }
+      }
+    },
+    {
+      "name": "Parent - Dashboard",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/parent/children/{{child_id}}/dashboard",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{parent_token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ]
+      }
+    },
+    {
+      "name": "Parent - Predictions",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/parent/children/{{child_id}}/predictions",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{parent_token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ]
+      }
+    },
+    {
+      "name": "Parent - Notifications",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/parent/notifications",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{parent_token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ]
+      }
+    },
+    {
+      "name": "Child - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) pm.collectionVariables.set('child_token', res.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/child/login",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"username\": \"leo\",\n  \"password\": \"kids1234\"\n}" }
+      }
+    },
+    {
+      "name": "Child - List Games",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/child/games",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{child_token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ]
+      }
+    },
+    {
+      "name": "Child - Start Session",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.session) pm.collectionVariables.set('session_id', res.session.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/child/sessions/start",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{child_token}}" },
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"game_id\": 1,\n  \"level\": 2,\n  \"difficulty_level\": \"Hard\"\n}" }
+      }
+    },
+    {
+      "name": "Child - Submit Trial",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/child/sessions/{{session_id}}/trials",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{child_token}}" },
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"trial_number\": 1,\n  \"task_type\": \"Matching\",\n  \"difficulty_level\": \"Hard\",\n  \"target_type\": \"Shape\",\n  \"stimulus_count\": 6,\n  \"reaction_time_ms\": 1750,\n  \"correct\": true,\n  \"errors\": 0,\n  \"missed_targets\": 0,\n  \"duration_sec\": 15\n}" }
+      }
+    },
+    {
+      "name": "Child - End Session (runs ML)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/child/sessions/{{session_id}}/end",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{child_token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ]
+      }
+    },
+    {
+      "name": "Child - Session History",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/child/sessions/history",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{child_token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ]
+      }
+    },
+    {
+      "name": "Child - Chatbot Send",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/child/chatbot/send",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{child_token}}" },
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"message\": \"hi\"\n}" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,316 @@
+{
+  "summary": {
+    "total": 30,
+    "correct": 30,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "tp": 9,
+    "tn": 21,
+    "fp": 0,
+    "fn": 0
+  },
+  "per_child": [
+    {
+      "user_id": 1,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8529473343170908,
+      "prob_normal": 0.8529473343170908,
+      "prob_disorder": 0.14705266568290917,
+      "correct": true
+    },
+    {
+      "user_id": 2,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.8503343102559044,
+      "prob_normal": 0.1496656897440956,
+      "prob_disorder": 0.8503343102559044,
+      "correct": true
+    },
+    {
+      "user_id": 3,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8920130288105774,
+      "prob_normal": 0.8920130288105774,
+      "prob_disorder": 0.10798697118942265,
+      "correct": true
+    },
+    {
+      "user_id": 4,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.9052593254760021,
+      "prob_normal": 0.9052593254760021,
+      "prob_disorder": 0.0947406745239979,
+      "correct": true
+    },
+    {
+      "user_id": 5,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.6015103154147192,
+      "prob_normal": 0.3984896845852808,
+      "prob_disorder": 0.6015103154147192,
+      "correct": true
+    },
+    {
+      "user_id": 6,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.869060938709519,
+      "prob_normal": 0.869060938709519,
+      "prob_disorder": 0.130939061290481,
+      "correct": true
+    },
+    {
+      "user_id": 7,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8926195950430866,
+      "prob_normal": 0.8926195950430866,
+      "prob_disorder": 0.10738040495691328,
+      "correct": true
+    },
+    {
+      "user_id": 8,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.5340654668977778,
+      "prob_normal": 0.4659345331022222,
+      "prob_disorder": 0.5340654668977778,
+      "correct": true
+    },
+    {
+      "user_id": 9,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.9368242374123541,
+      "prob_normal": 0.9368242374123541,
+      "prob_disorder": 0.06317576258764582,
+      "correct": true
+    },
+    {
+      "user_id": 10,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8582022052940615,
+      "prob_normal": 0.8582022052940615,
+      "prob_disorder": 0.14179779470593842,
+      "correct": true
+    },
+    {
+      "user_id": 11,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.7740334372339035,
+      "prob_normal": 0.22596656276609645,
+      "prob_disorder": 0.7740334372339035,
+      "correct": true
+    },
+    {
+      "user_id": 12,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8595045190301527,
+      "prob_normal": 0.8595045190301527,
+      "prob_disorder": 0.14049548096984737,
+      "correct": true
+    },
+    {
+      "user_id": 13,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8647129251074182,
+      "prob_normal": 0.8647129251074182,
+      "prob_disorder": 0.1352870748925819,
+      "correct": true
+    },
+    {
+      "user_id": 14,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8354800072044218,
+      "prob_normal": 0.8354800072044218,
+      "prob_disorder": 0.16451999279557822,
+      "correct": true
+    },
+    {
+      "user_id": 15,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8821143548945131,
+      "prob_normal": 0.8821143548945131,
+      "prob_disorder": 0.11788564510548705,
+      "correct": true
+    },
+    {
+      "user_id": 16,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.9139622129601795,
+      "prob_normal": 0.9139622129601795,
+      "prob_disorder": 0.08603778703982053,
+      "correct": true
+    },
+    {
+      "user_id": 17,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.883084138728367,
+      "prob_normal": 0.883084138728367,
+      "prob_disorder": 0.11691586127163311,
+      "correct": true
+    },
+    {
+      "user_id": 18,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8883619641665869,
+      "prob_normal": 0.8883619641665869,
+      "prob_disorder": 0.11163803583341306,
+      "correct": true
+    },
+    {
+      "user_id": 19,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.6934730878352704,
+      "prob_normal": 0.30652691216472955,
+      "prob_disorder": 0.6934730878352704,
+      "correct": true
+    },
+    {
+      "user_id": 20,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.9250055089629219,
+      "prob_normal": 0.9250055089629219,
+      "prob_disorder": 0.07499449103707805,
+      "correct": true
+    },
+    {
+      "user_id": 21,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.650183486562257,
+      "prob_normal": 0.34981651343774295,
+      "prob_disorder": 0.650183486562257,
+      "correct": true
+    },
+    {
+      "user_id": 22,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8273637198919357,
+      "prob_normal": 0.8273637198919357,
+      "prob_disorder": 0.17263628010806437,
+      "correct": true
+    },
+    {
+      "user_id": 23,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.8273567182446246,
+      "prob_normal": 0.17264328175537536,
+      "prob_disorder": 0.8273567182446246,
+      "correct": true
+    },
+    {
+      "user_id": 24,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.885999826454341,
+      "prob_normal": 0.885999826454341,
+      "prob_disorder": 0.11400017354565901,
+      "correct": true
+    },
+    {
+      "user_id": 25,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.6162604144253405,
+      "prob_normal": 0.38373958557465954,
+      "prob_disorder": 0.6162604144253405,
+      "correct": true
+    },
+    {
+      "user_id": 26,
+      "trials": 10,
+      "true_label": "Visual_Perception_Disorder",
+      "pred_label": "Visual_Perception_Disorder",
+      "confidence": 0.8121270190495276,
+      "prob_normal": 0.1878729809504724,
+      "prob_disorder": 0.8121270190495276,
+      "correct": true
+    },
+    {
+      "user_id": 27,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8636220276608239,
+      "prob_normal": 0.8636220276608239,
+      "prob_disorder": 0.1363779723391761,
+      "correct": true
+    },
+    {
+      "user_id": 28,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.9526152605773678,
+      "prob_normal": 0.9526152605773678,
+      "prob_disorder": 0.04738473942263208,
+      "correct": true
+    },
+    {
+      "user_id": 29,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8691798689776278,
+      "prob_normal": 0.8691798689776278,
+      "prob_disorder": 0.13082013102237222,
+      "correct": true
+    },
+    {
+      "user_id": 30,
+      "trials": 10,
+      "true_label": "Normal",
+      "pred_label": "Normal",
+      "confidence": 0.8260965896797213,
+      "prob_normal": 0.8260965896797213,
+      "prob_disorder": 0.17390341032027887,
+      "correct": true
+    }
+  ]
+}

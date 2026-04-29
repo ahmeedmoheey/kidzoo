@@ -1,0 +1,109 @@
+{
+  "model_type": "LogisticRegression",
+  "model_params": {
+    "C": 0.25,
+    "penalty": "l2",
+    "max_iter": 1000
+  },
+  "classes": [
+    "Normal",
+    "Visual_Perception_Disorder"
+  ],
+  "accuracy": 0.9111111111111111,
+  "f1_disorder": 0.8260869565217391,
+  "random_state": 42,
+  "selected_features": [
+    "User_ID",
+    "Trial_ID",
+    "Errors",
+    "Target_Type_Position",
+    "Target_Type_Direction",
+    "Difficulty_Level_Hard",
+    "Task_Type_Matching",
+    "Task_Type_Orientation",
+    "Stimulus_Count",
+    "Target_Type_Shape",
+    "Correct"
+  ],
+  "all_features_after_encoding": [
+    "User_ID",
+    "Trial_ID",
+    "Stimulus_Count",
+    "Reaction_Time_ms",
+    "Correct",
+    "Errors",
+    "Missed_Targets",
+    "Session_Duration_sec",
+    "Task_Type_Matching",
+    "Task_Type_Orientation",
+    "Task_Type_Tracking",
+    "Difficulty_Level_Hard",
+    "Difficulty_Level_Medium",
+    "Target_Type_Direction",
+    "Target_Type_Position",
+    "Target_Type_Shape"
+  ],
+  "categorical_columns": [
+    "Task_Type",
+    "Difficulty_Level",
+    "Target_Type"
+  ],
+  "raw_numeric_columns": [
+    "User_ID",
+    "Trial_ID",
+    "Stimulus_Count",
+    "Reaction_Time_ms",
+    "Correct",
+    "Errors",
+    "Missed_Targets",
+    "Session_Duration_sec"
+  ],
+  "raw_categorical_values": {
+    "Task_Type": [
+      "Discrimination",
+      "Matching",
+      "Orientation",
+      "Tracking"
+    ],
+    "Difficulty_Level": [
+      "Easy",
+      "Hard",
+      "Medium"
+    ],
+    "Target_Type": [
+      "Color",
+      "Direction",
+      "Position",
+      "Shape"
+    ]
+  },
+  "task_to_skill": {
+    "Tracking": "Visual Tracking",
+    "Discrimination": "Visual Discrimination",
+    "Matching": "Visual Matching",
+    "Orientation": "Spatial Orientation"
+  },
+  "target_type_to_skill": {
+    "Direction": "Direction Perception",
+    "Color": "Color Perception",
+    "Shape": "Shape Perception",
+    "Position": "Spatial Relations"
+  },
+  "task_types": [
+    "Discrimination",
+    "Matching",
+    "Orientation",
+    "Tracking"
+  ],
+  "difficulty_levels": [
+    "Easy",
+    "Hard",
+    "Medium"
+  ],
+  "target_types": [
+    "Color",
+    "Direction",
+    "Position",
+    "Shape"
+  ]
+}
