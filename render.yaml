@@ -1,0 +1,68 @@
+databases:
+  - name: kidzoo-db
+    region: oregon
+
+services:
+  - type: web
+    name: kidzoo-backend
+    runtime: docker
+    rootDir: backend
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        sync: false
+      - key: APP_KEY
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: kidzoo-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: kidzoo-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: kidzoo-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: kidzoo-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: kidzoo-db
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: MAIL_MAILER
+        value: log
+      - key: ML_SERVICE_HOSTPORT
+        fromService:
+          type: pserv
+          name: kidzoo-ml
+          property: hostport
+      - key: ML_SERVICE_TIMEOUT
+        value: "15"
+    preDeployCommand: php artisan migrate --force --seed
+
+  - type: pserv
+    name: kidzoo-ml
+    runtime: python
+    rootDir: ml_service
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port 8001
