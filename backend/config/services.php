@@ -36,21 +36,7 @@ return [
     ],
 
     'ml' => [
-        'url' => (function () {
-            $url = env('ML_SERVICE_URL');
-
-            if ($url) {
-                return $url;
-            }
-
-            $hostport = env('ML_SERVICE_HOSTPORT');
-
-            if ($hostport) {
-                return 'http://' . $hostport;
-            }
-
-            return 'http://127.0.0.1:8001';
-        })(),
+        'url' => env('ML_SERVICE_URL', 'http://127.0.0.1:8001'),
         'timeout' => env('ML_SERVICE_TIMEOUT', 10),
     ],
 
