@@ -1,0 +1,45 @@
+services:
+  - name: kidzoo-backend
+    type: web
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    rootDir: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_NAME
+        value: KidZoo
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /app/database/database.sqlite
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: ML_SERVICE_MODE
+        value: local
+      - key: N8N_AI_WEBHOOK_URL
+        sync: false
+      - key: N8N_AI_TEST_WEBHOOK_URL
+        sync: false
+      - key: N8N_CHAT_WEBHOOK_URL
+        sync: false
+      - key: N8N_CHAT_TEST_WEBHOOK_URL
+        sync: false

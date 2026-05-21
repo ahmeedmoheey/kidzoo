@@ -407,8 +407,8 @@ Response `200`:
   "games": [
     {
       "id": 1,
-      "slug": "shape-matcher",
-      "name": "Shape Matcher",
+      "slug": "shape_matching",
+      "name": "shape_matching",
       "description": "Match similar shapes as fast as you can.",
       "icon_url": "https://example.com/games/shape.png",
       "min_age": 5,
@@ -475,7 +475,7 @@ Request:
 ```json
 {
   "trial_number": 1,
-  "task_type": "Tracking",
+  "task_type": "Matching",
   "difficulty_level": "Easy",
   "target_type": "Shape",
   "stimulus_count": 6,
@@ -496,7 +496,7 @@ Response `201`:
     "id": 1,
     "session_id": 1,
     "trial_number": 1,
-    "task_type": "Tracking",
+    "task_type": "Matching",
     "difficulty_level": "Easy",
     "target_type": "Shape",
     "stimulus_count": 6,
@@ -603,8 +603,8 @@ Response `200`:
       "updated_at": "2026-04-22T19:18:00.000000Z",
       "game": {
         "id": 1,
-        "slug": "shape-matcher",
-        "name": "Shape Matcher",
+        "slug": "shape_matching",
+        "name": "shape_matching",
         "icon_url": "https://example.com/games/shape.png"
       }
     }

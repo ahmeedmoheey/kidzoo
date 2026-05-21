@@ -1,0 +1,109 @@
+    Chapter 5: Results and Discussion
+
+    5.1 Results Overview
+
+    This chapter presents the main results obtained from the development and evaluation of the KidZoo system. The project produced a working backend platform integrated with an AI-based prediction service for identifying indicators of visual perception disorder from children’s gameplay behavior. The final system was able to support parent and child authentication, child profile management, educational game session tracking, AI-based prediction, dashboard reporting, notifications, and chatbot communication.
+
+    From a functional perspective, the implemented backend successfully handled the complete application workflow. A parent can register, verify the account using OTP, add a child profile, and monitor that child through the dashboard. A child can log in, start a game session, send trial-by-trial performance data, and complete the session. At session completion, the system successfully aggregates the gameplay metrics, sends them to the AI service, stores the returned prediction, and triggers a notification if the output indicates possible disorder-related behavior.
+
+    From an analytical perspective, the AI model produced promising classification results. The trained Logistic Regression model achieved a test accuracy of 91.11%, an F1-score of 0.826 for the Visual_Perception_Disorder class, and a ROC-AUC of 0.965. In addition, the stored real-data validation report showed perfect classification on a small grouped validation set of 30 child-level cases, with 30 correct predictions out of 30.
+
+    These results indicate that the project was able to combine system functionality and intelligent analysis in a practical way. The outcome is not only a data management application, but also a system capable of generating interpretable indicators and actionable follow-up suggestions.
+
+    5.2 Testing Results
+
+    Testing was performed on both the system behavior and the machine learning outputs. On the system side, the backend API endpoints were tested across the major modules, including parent registration, OTP verification, login, child creation, session start, trial submission, session completion, dashboard access, notification retrieval, and chatbot messaging. These flows confirmed that the system components were connected correctly and that protected routes behaved as expected under token-based authentication.
+
+    The session management flow produced especially important results because it represents the core functional pipeline of the project. When a child starts a session, the backend creates a session record in the database. During gameplay, each trial is recorded individually. Once the session ends, the backend calculates summary indicators such as accuracy, reaction time, errors, and duration, then forwards the structured trial payload to the AI module. The returned prediction is then stored inside the `visual_predictions` table and is made available to the dashboard. This full cycle worked as intended and demonstrates that the integration between backend and AI modules is operational.
+
+    The AI model was tested using several evaluation strategies. On the main train-test split, the model produced an accuracy of 0.9111. The confusion matrix showed 63 true negatives, 19 true positives, 0 false positives, and 8 false negatives. This means the model was strong at identifying normal cases and was also able to detect many disorder-related cases, although some disorder cases were still missed.
+
+    The project also included five-fold cross-validation and multi-seed testing. The cross-validation summary produced a mean accuracy of 0.8933, a mean F1-score of 0.7920 for the disorder class, and a mean ROC-AUC of 0.9450. Multi-seed testing showed a mean train accuracy of 0.9195 and a mean test accuracy of 0.8833, with a mean train-test gap of 0.0362. This gap was classified as healthy, which suggests that the model did not show serious overfitting under the tested splits.
+
+    An additional real-data validation report was generated for 30 child-level grouped cases, where the summary showed 100% accuracy, precision, recall, and F1-score. Although this result is encouraging, it should be interpreted carefully because the validation set is small and may not fully represent all real-world gameplay conditions.
+
+    5.3 Performance Analysis
+
+    The performance of the KidZoo system can be analyzed from two main perspectives: system-level performance and AI-level performance. At the system level, the backend architecture was effective in handling the application workflow in a structured way. Since the system separates the backend service from the AI microservice, the application benefits from modularity and easier maintenance. The backend can manage authentication, gameplay sessions, and dashboard reporting independently, while the AI service focuses only on inference and plan generation.
+
+    The AI-level performance indicates that the model can distinguish between the two classes with relatively high confidence. The ROC-AUC value of 0.965 in the base test split suggests strong class separation ability. The F1-score of 0.826 for the disorder class is also meaningful because this class is the most critical one in the application. However, recall for the disorder class was 0.7037 in the main split, which means that some positive cases may still be missed. In a screening-oriented system, this observation is important because missing a case can be more serious than incorrectly flagging one.
+
+    The confusion matrix highlights another notable point. The model produced zero false positives in the main split, which means it did not incorrectly classify any normal case as a disorder case in that evaluation. This is positive from the perspective of avoiding unnecessary parent concern. At the same time, the presence of false negatives shows that the model is more conservative in predicting disorder cases. This tradeoff may be acceptable for an early prototype, but it also shows where further improvement is needed.
+
+    The multi-seed and cross-validation results suggest that the model behavior is relatively stable. The variation across folds and seeds was not extreme, and the average train-test gap remained low. This supports the conclusion that the selected Logistic Regression model is a reasonable baseline for the current dataset size and structure.
+
+    At the application level, performance was also improved by the fallback design. If the remote AI service becomes unavailable, the backend still completes the gameplay session using local rule-based estimation. This contributes to overall system robustness and reduces the chance of failed user flows during prediction service downtime.
+
+    5.4 Discussion
+
+    The results of this project show that combining educational gameplay with structured behavioral analysis can produce a useful support system for parents and children. The backend succeeded in managing the complete operational cycle, while the AI module added an analytical layer that turns gameplay behavior into interpretable indicators. This integration is one of the main strengths of the project because it transforms simple play sessions into useful developmental insights.
+
+    The model results are promising, especially considering the modest dataset size and the use of a relatively simple algorithm. Logistic Regression proved to be a suitable starting point because it provided good classification performance while remaining lightweight and easier to interpret than more complex models. In the context of a graduation project, this makes the solution practical and technically justifiable.
+
+    At the same time, the results should be interpreted as supportive rather than diagnostic. The system can indicate behavioral patterns that may deserve attention, but it cannot replace clinical assessment. This distinction is essential because the project is designed as an assistive educational and monitoring tool, not as a medical diagnosis system.
+
+    Another important observation is that the AI output becomes more valuable because it is not limited to a final label. The model also contributes weak-skill indicators and training suggestions. This makes the system more useful for follow-up because parents receive not only a result, but also guidance on what kinds of activities may support the child.
+
+    The discussion also shows that system design choices directly influenced the results. Storing every trial separately, using a modular backend, and separating the AI service all contributed to clearer analysis and better extensibility. Therefore, the achieved results are not only due to the model itself, but also due to the architectural decisions made during implementation.
+
+    5.5 Limitations
+
+    5.5.1 Limited User Testing
+
+    One of the main limitations of the project is the limited scope of real user testing. Although the system workflow was tested technically and the model was validated using available datasets and grouped cases, the project did not yet undergo broad real-world testing with a large number of children and parents. As a result, the current evaluation cannot fully reflect how users of different ages, behaviors, and backgrounds would interact with the application in practice.
+
+    5.5.2 Time Constraints
+
+    The project was developed within the limited timeframe of a graduation project. This affected the depth of data collection, the breadth of user evaluation, and the opportunity to try multiple advanced model architectures. More time would have allowed broader field testing, richer gameplay scenarios, more interface refinements, and deeper AI experimentation.
+
+    5.5.3 AI Limitations
+
+    The AI component, although promising, still has limitations. The current model is based on Logistic Regression and relies on structured gameplay metrics rather than direct clinical signals. It can identify indicators and patterns, but it cannot provide a final diagnosis. In addition, the model recall for disorder cases was lower than perfect, which means some affected cases may still be missed.
+
+    5.5.4 Device Dependency
+
+    The system depends partly on the device used during gameplay. Reaction time, screen behavior, touch sensitivity, and performance smoothness may vary across devices. Because some model features are based on user interaction timing and errors, hardware differences could influence recorded results even if the child behavior is similar.
+
+    5.5.6 Internet Dependency
+
+    Some parts of the system depend on connectivity, especially when the backend needs to communicate with the external AI microservice or optional chatbot providers. Although local fallback logic reduces this issue, internet or network dependency still affects full functionality in distributed or production-like environments.
+
+    5.6 Data Challenges
+
+    5.6.1 Lack of Real Dataset
+
+    One of the most significant challenges was the absence of a large, clinically validated real-world dataset specifically designed for this problem. Because visual perception disorder data is not always easy to access, the project had to rely on an available structured dataset and controlled validation logic rather than large-scale clinical gameplay data.
+
+    5.6.2 Small Data Size
+
+    The dataset used in the project contains 300 rows for 30 users. While this was enough to build and evaluate a prototype model, it is still a relatively small dataset for a behavioral classification problem. A small dataset can limit generalization and may not cover the full range of child interaction patterns that could appear in real use.
+
+    5.6.3 Data Variability
+
+    Child gameplay behavior naturally varies from one child to another. Even children in the same age group may differ in attention span, speed, understanding of instructions, and familiarity with digital devices. This variability makes it challenging to build a model that generalizes equally well across all user profiles.
+
+    5.6.4 Noise in Data
+
+    Behavioral gameplay data can contain noise. For example, a child may become distracted, may tap randomly, may misunderstand the task, or may stop engaging seriously during a session. Such noise can affect measures like reaction time, error count, and missed targets, which are all important model features. Therefore, the recorded data may not always reflect the child’s actual visual ability alone.
+
+    5.6.5 Data Collection Difficulty
+
+    Collecting structured trial-level data requires well-designed gameplay logic and consistent logging. This is not always easy because every trial must be recorded accurately with the correct time, difficulty, target type, and outcome. Any inconsistency in data collection can reduce model quality and make later analysis more difficult.
+
+    5.6.6 Real-time Tracking Issues
+
+    Real-time tracking of gameplay behavior introduces additional technical difficulty. Delays in event recording, variation in device response time, or interruption during a session can all affect the quality of the captured data. Since the model depends on detailed sequential metrics, real-time collection issues can have a direct effect on prediction reliability.
+
+    5.7 Future Work
+
+    Several future improvements can strengthen the KidZoo system. First, the dataset should be expanded using a larger number of children and more diverse real gameplay records. Second, the AI component can be improved by comparing additional machine learning models and exploring ensemble methods or calibrated classification approaches. Third, the system can benefit from longer-term child progress tracking so that predictions are not based only on isolated sessions but also on behavioral trends over time.
+
+    Another important future direction is deeper collaboration with specialists in child development, psychology, and occupational therapy. Expert review can help refine the interpretation of the gameplay metrics and improve the educational value of the generated training plans. The project can also be extended with more games targeting additional visual and cognitive skills, which would make the collected data richer and the support recommendations more personalized.
+
+    Finally, broader real-world deployment and usability testing would help evaluate how parents and children interact with the system outside a controlled development setting. Such testing would provide stronger evidence for both system effectiveness and AI reliability.
+
+    5.8 Conclusion
+
+    The results of the KidZoo project demonstrate that it is possible to build an integrated system that combines educational gameplay, backend management, and AI-based behavioral analysis in a meaningful way. The backend architecture successfully supported the major application flows, and the AI model produced encouraging performance results on the available data.
+
+    Although the current system still has limitations related to data size, real-world validation, and the screening nature of the AI model, the overall outcome is strong for a graduation project. The project provides a practical foundation for future development and shows that intelligent analysis can be embedded into child-focused educational systems to produce useful monitoring and support features.

@@ -13,18 +13,22 @@ class SessionTrial extends Model
         'task_type',
         'difficulty_level',
         'target_type',
+        'prompt_value',
+        'selected_value',
         'stimulus_count',
         'reaction_time_ms',
         'correct',
         'errors',
         'missed_targets',
         'duration_sec',
+        'metadata',
     ];
 
     protected function casts(): array
     {
         return [
             'correct' => 'boolean',
+            'metadata' => 'array',
         ];
     }
 

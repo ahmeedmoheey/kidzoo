@@ -1,0 +1,75 @@
+Chapter 4: Implementation
+
+4.1 Implementation Overview
+
+This chapter presents the implementation of the KidZoo system from the back-end and artificial intelligence perspectives. The implementation was designed as a service-oriented architecture in which the Laravel back-end manages authentication, child profiles, gameplay sessions, notifications, dashboards, and chatbot communication, while a separate FastAPI-based machine learning service performs prediction and plan generation for visual perception disorder indicators. This separation made the system easier to organize, test, and extend.
+
+The main implementation workflow starts when a parent creates an account and adds one or more child profiles. After that, the child logs in and plays one of the educational games. During gameplay, every trial is recorded by the back-end with detailed metrics such as reaction time, number of errors, number of missed targets, difficulty level, and target type. When the session ends, the back-end aggregates the collected trial data and sends it to the AI service. The AI service then returns a prediction result, confidence values, weak skill indicators, and a suggested training plan. Finally, the result is stored in the database and shown in the parent dashboard, and a notification is generated if the system detects a possible disorder pattern.
+
+This implementation supports two important goals. First, it provides a complete and secure back-end for the project data and user flows. Second, it enables intelligent analysis of child performance using machine learning, which adds practical value beyond traditional educational applications.
+
+4.2 Tools and Technologies
+
+4.2.1 Artificial Intelligence
+
+The artificial intelligence component was implemented as a separate Python microservice using FastAPI. This service was responsible for model inference and AI-related business logic. The machine learning model was built using scikit-learn, and the selected algorithm was Logistic Regression. This algorithm was chosen because it is lightweight, interpretable, fast in training and prediction, and suitable for structured tabular data collected from game trials.
+
+The AI model was trained on a dataset named visual_perception_dataset.csv. The dataset contains 300 records collected for 30 users and includes two target classes: Normal and Visual_Perception_Disorder. The input features include numerical and categorical trial attributes such as User_ID, Trial_ID, Stimulus_Count, Reaction_Time_ms, Correct, Errors, Missed_Targets, Session_Duration_sec, Task_Type, Difficulty_Level, and Target_Type. During preprocessing, categorical fields were encoded, numerical values were standardized using StandardScaler, and a selected subset of features was used to build the final model.
+
+The training script saved the trained model and preprocessing artifacts inside the artifacts folder. These files include the classification model, the scaler, and metadata describing the selected features and allowed categorical values. According to the generated evaluation report, the model achieved approximately 91.11% test accuracy, 0.826 F1-score for the disorder class, and 0.965 ROC-AUC. In addition, cross-validation results showed stable performance, and the mean train-test gap remained low, which indicates that the model did not suffer from serious overfitting.
+
+The AI service exposes REST endpoints such as /health, /meta, /predict, and /plan. The /predict endpoint returns the predicted class and class probabilities, while the /plan endpoint adds weak-skills detection and a day-by-day training plan. When the predicted class is Visual_Perception_Disorder, the service also identifies the visual skill categories that need support, such as visual tracking, visual discrimination, visual matching, or spatial orientation.
+
+4.2.2 Back-end
+
+The back-end of KidZoo was implemented using Laravel 12 as a RESTful API. Laravel was selected because it provides organized MVC structure, routing, validation, ORM support, authentication tools, and clean integration with external services. Authentication was implemented using Laravel Sanctum, which enabled token-based access for both parents and children. The back-end also used Eloquent ORM for database interaction and migration files for schema management.
+
+The API was organized into two main domains: Parent API and Child API. The Parent API handles registration, email verification by OTP, login, password reset, profile management, child management, notifications, dashboard access, and chatbot communication. The Child API handles child login, game listing, session start, trial submission, session completion, session history, and chatbot interaction. This separation improved clarity and made authorization rules easier to enforce.
+
+The OTP mechanism was implemented as part of parent authentication to verify email ownership and support password reset. The parent account cannot fully proceed in the normal flow until email verification is completed. For child accounts, the parent creates dedicated usernames and passwords, which gives the parent full control over account setup and supervision.
+
+The back-end also contains service classes to encapsulate core logic. For example, MlService handles communication with the AI service and also provides a local fallback rule-based prediction path when the external service is unavailable. ChatAiService is responsible for generating chatbot responses through AI providers when configured. This service-oriented approach reduced complexity inside controllers and improved maintainability.
+
+4.3 System Modules Implementation
+
+The implemented system was divided into several functional modules in the back-end. The first module is the parent account module. This module includes registration, email verification using one-time passwords, secure login, password recovery, profile update, and logout. These functions ensure that the system can securely identify parents and keep child-related data linked to the correct account.
+
+The second module is child management. Through this module, the parent can create, update, view, and delete child profiles. Each child profile stores attributes such as name, username, age, gender, avatar, and active status. The child entity is directly related to the parent entity, which allows the dashboard and prediction results to be organized under the proper family account.
+
+The third module is game and session management. The game database stores educational games with their age range, task type, skill type, total levels, and icon. When a child starts a game, the system creates a game session record. During the session, each trial is saved separately with detailed performance metrics including trial number, task type, difficulty level, target type, stimulus count, reaction time, correctness, number of errors, missed targets, and duration. At the end of the session, the system calculates summary indicators such as total trials, correct count, error count, missed count, average reaction time, total duration, and overall accuracy.
+
+The fourth module is the parent dashboard module. This module summarizes the child activity in a format suitable for follow-up and monitoring. It provides total sessions, completed sessions, total trials, average accuracy, latest prediction result, weekly activity summary, top played games, and recent sessions. This dashboard transforms raw gameplay data into meaningful information that parents can understand more easily.
+
+The fifth module is the notification module. When the final prediction status indicates a possible visual disorder pattern, the system automatically creates a notification for the parent. The notification includes the child identifier, prediction reference, and confidence value. This ensures that important outcomes are not hidden inside session records and are instead actively communicated to the parent.
+
+The sixth module is the chatbot module. The chatbot stores conversation messages in the database and supports interactions for both parents and children. The implementation combines multiple strategies: direct AI provider integration, optional workflow-based integration, and local fallback responses. This design improves reliability and allows the system to remain usable even if external AI access is unavailable.
+
+4.4 AI Integration
+
+AI integration in KidZoo was implemented through a clear pipeline between the Laravel back-end and the FastAPI microservice. After a child finishes a game session, the SessionController retrieves all recorded trials and transforms them into the format expected by the AI model. Each trial is mapped to fields such as Task_Type, Difficulty_Level, Target_Type, Reaction_Time_ms, Errors, Missed_Targets, and Session_Duration_sec. The Laravel back-end then sends this structured payload to the /plan endpoint of the AI service.
+
+The response from the AI service contains several outputs: the status of the prediction, the label, confidence value, class probabilities, weak skills, training plan, and number of analyzed trials. The back-end normalizes this response and stores it as a VisualPrediction record in the database. In addition, the record stores prob_normal, prob_disorder, the generated training plan, and the model version used for the prediction.
+
+One of the important implementation decisions was the use of fallback logic. If the remote AI service is unavailable or returns an error, the Laravel back-end does not stop the session flow. Instead, it uses a local fallback plan based on rule-based thresholds for accuracy, errors, missed targets, and average reaction time. This ensures continuity of service and prevents the application from failing completely during AI service downtime.
+
+The integration also supports explainability at a practical level. Instead of returning only a binary prediction, the AI workflow returns weak skill categories and suggested exercises such as maze navigation, follow-the-dot animation, shape matching, spot-the-difference, and direction-based activities. This makes the AI output more useful for both parents and future therapeutic follow-up.
+
+4.5 Testing
+
+Testing was performed on both the back-end logic and the AI model behavior. On the back-end side, the API routes were documented and structured to allow repeated testing using tools such as Postman. Core flows that were checked include parent registration, OTP verification, child creation, child login, session start, trial submission, session completion, dashboard retrieval, notification retrieval, and chatbot messaging. These tests helped confirm that the modules communicate correctly and that protected endpoints enforce token-based access.
+
+For the AI component, testing included model evaluation during training as well as service-level inference validation. The training script generated an evaluation report that contained accuracy, F1-score, ROC-AUC, confusion matrix values, per-class precision and recall, five-fold cross-validation results, and multiple-seed runs. The confusion matrix showed that the model correctly identified 63 normal cases and 19 disorder cases in the main test split, while producing no false positives and 8 false negatives. Cross-validation and multi-seed testing showed that the model performance remained generally stable across repeated experiments.
+
+The integration between the back-end and the AI service was also tested by ending child game sessions and checking whether prediction records were saved correctly and whether notifications were triggered when the prediction status indicated visual disorder. Health endpoints were also available to verify that both services were running correctly.
+
+4.6 Challenges
+
+Several implementation challenges were encountered during the development of this project. One challenge was connecting gameplay data with meaningful machine learning features. The system needed to transform simple game interactions into structured indicators such as accuracy, error frequency, and reaction time so that the model could use them effectively.
+
+Another challenge was maintaining reliability when the AI service might be unreachable. Because the system depends on predictions at the end of each session, a full dependency on the external service would have made the platform fragile. This issue was solved by implementing a local fallback prediction flow inside the Laravel back-end.
+
+A further challenge was balancing intelligent behavior with responsible interpretation. The application should assist parents by highlighting possible indicators, but it must not claim to deliver a final medical diagnosis. For this reason, the AI outputs were framed as indicators and support suggestions rather than definitive clinical decisions.
+
+There was also a challenge in keeping the architecture clean while supporting several features at once, including authentication, gameplay recording, dashboard analytics, notifications, and chatbot interaction. Dividing the system into dedicated controllers, models, migrations, and services made the codebase more organized and easier to maintain.
+
+Overall, the implementation phase resulted in a functional back-end and AI architecture that supports the major goals of the KidZoo graduation project. The delivered system does not only store educational game data, but also analyzes child performance, generates intelligent feedback, and presents actionable insights to parents in a structured way.

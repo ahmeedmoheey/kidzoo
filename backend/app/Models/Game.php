@@ -12,18 +12,22 @@ class Game extends Model
         'name',
         'description',
         'icon_url',
+        'asset_type',
         'task_type',
+        'target_type',
         'skill',
         'min_age',
         'max_age',
         'total_levels',
         'is_active',
+        'settings',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'settings' => 'array',
         ];
     }
 

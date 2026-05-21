@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\ChildApi;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppNotification;
-use App\Models\Game;
 use App\Models\GameSession;
 use App\Models\SessionTrial;
 use App\Models\VisualPrediction;
@@ -16,6 +15,10 @@ use Throwable;
 
 class SessionController extends Controller
 {
+    private const TASK_TYPES = ['Tracking', 'Discrimination', 'Matching', 'Orientation'];
+
+    private const TARGET_TYPES = ['Direction', 'Color', 'Shape', 'Position', 'Animal', 'Object', 'Pattern', 'Sequence', 'Icon'];
+
     public function __construct(private readonly MlService $ml)
     {
     }
@@ -45,20 +48,39 @@ class SessionController extends Controller
         abort_unless($session->child_id === $request->user()->id, 403);
         abort_if($session->status !== 'in_progress', 409, 'Session is not in progress.');
 
+        $session->loadMissing('game');
+
         $data = $request->validate([
             'trial_number' => ['required', 'integer', 'min:1'],
-            'task_type' => ['required', 'in:Tracking,Discrimination,Matching,Orientation'],
-            'difficulty_level' => ['required', 'in:Easy,Medium,Hard'],
-            'target_type' => ['required', 'in:Direction,Color,Shape,Position'],
-            'stimulus_count' => ['required', 'integer', 'min:1', 'max:50'],
+            'task_type' => ['nullable', 'in:' . implode(',', self::TASK_TYPES)],
+            'difficulty_level' => ['nullable', 'in:Easy,Medium,Hard'],
+            'target_type' => ['nullable', 'in:' . implode(',', self::TARGET_TYPES)],
+            'prompt_value' => ['nullable', 'string', 'max:255'],
+            'selected_value' => ['nullable', 'string', 'max:255'],
+            'stimulus_count' => ['nullable', 'integer', 'min:1', 'max:50'],
             'reaction_time_ms' => ['required', 'integer', 'min:0'],
             'correct' => ['required', 'boolean'],
             'errors' => ['required', 'integer', 'min:0'],
             'missed_targets' => ['required', 'integer', 'min:0'],
             'duration_sec' => ['required', 'integer', 'min:0'],
+            'metadata' => ['nullable', 'array'],
         ]);
 
-        $trial = $session->trials()->create($data);
+        $trial = $session->trials()->create([
+            'trial_number' => $data['trial_number'],
+            'task_type' => $data['task_type'] ?? $session->game->task_type,
+            'difficulty_level' => $data['difficulty_level'] ?? $session->difficulty_level,
+            'target_type' => $data['target_type'] ?? $session->game->target_type,
+            'prompt_value' => $data['prompt_value'] ?? null,
+            'selected_value' => $data['selected_value'] ?? null,
+            'stimulus_count' => $data['stimulus_count'] ?? 1,
+            'reaction_time_ms' => $data['reaction_time_ms'],
+            'correct' => $data['correct'],
+            'errors' => $data['errors'],
+            'missed_targets' => $data['missed_targets'],
+            'duration_sec' => $data['duration_sec'],
+            'metadata' => $data['metadata'] ?? null,
+        ]);
 
         return response()->json(['message' => 'Trial recorded.', 'trial' => $trial], 201);
     }
@@ -68,6 +90,13 @@ class SessionController extends Controller
         abort_unless($session->child_id === $request->user()->id, 403);
         abort_if($session->status !== 'in_progress', 409, 'Session is not in progress.');
 
+        $summary = $request->validate([
+            'score' => ['nullable', 'integer', 'min:0'],
+            'max_score' => ['nullable', 'integer', 'min:0'],
+            'stars' => ['nullable', 'integer', 'min:0', 'max:3'],
+            'result_payload' => ['nullable', 'array'],
+        ]);
+
         $trials = $session->trials()->orderBy('trial_number')->get();
 
         if ($trials->isEmpty()) {
@@ -75,7 +104,9 @@ class SessionController extends Controller
                 'ended_at' => now(),
                 'status' => 'abandoned',
                 'duration_sec' => now()->diffInSeconds($session->started_at),
+                'result_payload' => $summary['result_payload'] ?? null,
             ]);
+
             return response()->json(['message' => 'Session ended with no trials.', 'session' => $session->fresh()]);
         }
 
@@ -86,8 +117,11 @@ class SessionController extends Controller
         $accuracy = round(($correctCount / $totalTrials) * 100, 2);
         $avgRT = round($trials->avg('reaction_time_ms'), 2);
         $duration = (int) $trials->sum('duration_sec');
+        $score = (int) ($summary['score'] ?? $correctCount);
+        $maxScore = (int) ($summary['max_score'] ?? $totalTrials);
+        $stars = (int) ($summary['stars'] ?? $this->calculateStars($accuracy));
 
-        DB::transaction(function () use ($session, $totalTrials, $correctCount, $errorsCount, $missedCount, $accuracy, $avgRT, $duration) {
+        DB::transaction(function () use ($session, $totalTrials, $correctCount, $errorsCount, $missedCount, $accuracy, $avgRT, $duration, $score, $maxScore, $stars, $summary) {
             $session->update([
                 'ended_at' => now(),
                 'duration_sec' => $duration,
@@ -97,6 +131,10 @@ class SessionController extends Controller
                 'missed_count' => $missedCount,
                 'accuracy' => $accuracy,
                 'avg_reaction_time_ms' => $avgRT,
+                'score' => $score,
+                'max_score' => $maxScore,
+                'stars' => $stars,
+                'result_payload' => $summary['result_payload'] ?? null,
                 'status' => 'completed',
             ]);
         });
@@ -112,18 +150,18 @@ class SessionController extends Controller
 
     private function runPrediction(GameSession $session, $trials): ?VisualPrediction
     {
-        $payload = $trials->map(fn (SessionTrial $t) => [
+        $payload = $trials->map(fn (SessionTrial $trial) => [
             'User_ID' => (int) $session->child_id,
-            'Trial_ID' => (int) $t->trial_number,
-            'Task_Type' => $t->task_type,
-            'Stimulus_Count' => (int) $t->stimulus_count,
-            'Difficulty_Level' => $t->difficulty_level,
-            'Target_Type' => $t->target_type,
-            'Reaction_Time_ms' => (int) $t->reaction_time_ms,
-            'Correct' => $t->correct ? 1 : 0,
-            'Errors' => (int) $t->errors,
-            'Missed_Targets' => (int) $t->missed_targets,
-            'Session_Duration_sec' => (int) $t->duration_sec,
+            'Trial_ID' => (int) $trial->trial_number,
+            'Task_Type' => $this->normalizeTaskType($trial->task_type),
+            'Stimulus_Count' => (int) $trial->stimulus_count,
+            'Difficulty_Level' => $trial->difficulty_level,
+            'Target_Type' => $this->normalizeTargetType($trial->target_type),
+            'Reaction_Time_ms' => (int) $trial->reaction_time_ms,
+            'Correct' => $trial->correct ? 1 : 0,
+            'Errors' => (int) $trial->errors,
+            'Missed_Targets' => (int) $trial->missed_targets,
+            'Session_Duration_sec' => (int) $trial->duration_sec,
         ])->values()->toArray();
 
         try {
@@ -144,7 +182,7 @@ class SessionController extends Controller
             'weak_skills' => $result['weak_skills'] ?? [],
             'training_plan' => $result['training_plan'] ?? [],
             'trials_count' => $result['trials_count'] ?? $trials->count(),
-            'model_version' => ! empty($result['fallback']) ? 'fallback' : 'v1.0.0',
+            'model_version' => ! empty($result['fallback']) ? 'fallback' : ($result['model_version'] ?? 'v1.0.0'),
         ]);
 
         if ($prediction->status === 'visual_disorder') {
@@ -194,7 +232,7 @@ class SessionController extends Controller
     {
         $sessions = $request->user()
             ->sessions()
-            ->with('game:id,slug,name,icon_url')
+            ->with('game:id,slug,name,icon_url,asset_type,task_type,target_type')
             ->latest()
             ->paginate(20);
 
@@ -205,8 +243,44 @@ class SessionController extends Controller
     {
         abort_unless($session->child_id === $request->user()->id, 403);
 
-        $session->load(['game', 'trials']);
+        $session->load(['game', 'trials', 'prediction']);
 
         return response()->json(['session' => $session]);
+    }
+
+    private function calculateStars(float $accuracy): int
+    {
+        return match (true) {
+            $accuracy >= 90 => 3,
+            $accuracy >= 70 => 2,
+            $accuracy >= 50 => 1,
+            default => 0,
+        };
+    }
+
+    private function normalizeTaskType(string $taskType): string
+    {
+        $normalized = strtolower(trim($taskType));
+
+        return match ($normalized) {
+            'tracking' => 'Tracking',
+            'discrimination', 'visual', 'find-items', 'find items' => 'Discrimination',
+            'matching', 'animal-match', 'animal match', 'shape-match', 'shape match' => 'Matching',
+            'orientation', 'sequence', 'sequence-game', 'sequence game' => 'Orientation',
+            default => 'Discrimination',
+        };
+    }
+
+    private function normalizeTargetType(string $targetType): string
+    {
+        $normalized = strtolower(trim($targetType));
+
+        return match ($normalized) {
+            'direction', 'sequence' => 'Direction',
+            'color' => 'Color',
+            'position', 'object', 'find-item', 'find items' => 'Position',
+            'shape', 'animal', 'pattern', 'icon' => 'Shape',
+            default => 'Shape',
+        };
     }
 }

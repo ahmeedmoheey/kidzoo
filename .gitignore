@@ -23,8 +23,10 @@ backend/storage/pail
 
 # Python generated files
 ml_service/venv/
+ml_service/venv311/
 ml_service/__pycache__/
 ml_service/.pytest_cache/
 ml_service/.mypy_cache/
 ml_service/.ruff_cache/
 ml_service/*.pyc
+ml_service/*.log

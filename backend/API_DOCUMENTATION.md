@@ -1,4 +1,4 @@
-# KidZoo Backend — API Documentation (for Flutter)
+# KidZoo Backend â€” API Documentation (for Flutter)
 
 Graduation project: kids educational app with Visual Perception Disorder detection via ML.
 
@@ -7,7 +7,7 @@ Graduation project: kids educational app with Visual Perception Disorder detecti
 - **Content-Type:** `application/json`
 - **Accept:** `application/json` (always send this, otherwise Laravel may redirect on validation errors).
 
-> The ML service runs separately at `http://127.0.0.1:8001`. **Flutter never talks to it directly** — Laravel proxies everything.
+> The ML service runs separately at `http://127.0.0.1:8001`. **Flutter never talks to it directly** â€” Laravel proxies everything.
 
 ---
 
@@ -33,15 +33,15 @@ Graduation project: kids educational app with Visual Perception Disorder detecti
 
 ```
 Flutter App
-    │
-    ▼  HTTP/JSON
-Laravel API (port 8000)  ───►  FastAPI ML Service (port 8001)  ───►  LogisticRegression model
-    │
-    ▼
+    â”‚
+    â–¼  HTTP/JSON
+Laravel API (port 8000)  â”€â”€â”€â–º  FastAPI ML Service (port 8001)  â”€â”€â”€â–º  LogisticRegression model
+    â”‚
+    â–¼
 SQLite DB
 ```
 
-**Flow:** parent registers → verifies OTP → adds child → child logs in → plays a game → Flutter streams trial metrics → on session end Laravel calls ML service → prediction stored + parent notified if disorder detected.
+**Flow:** parent registers â†’ verifies OTP â†’ adds child â†’ child logs in â†’ plays a game â†’ Flutter streams trial metrics â†’ on session end Laravel calls ML service â†’ prediction stored + parent notified if disorder detected.
 
 ---
 
@@ -61,8 +61,8 @@ Other errors:
 ```
 
 Status codes:
-- `200` success · `201` created · `400` bad request · `401` unauthenticated
-- `403` forbidden · `404` not found · `409` conflict · `422` validation · `500` server
+- `200` success Â· `201` created Â· `400` bad request Â· `401` unauthenticated
+- `403` forbidden Â· `404` not found Â· `409` conflict Â· `422` validation Â· `500` server
 
 ---
 
@@ -178,7 +178,7 @@ Response `200`: `{ "user": { ... } }`
 
 ### 1.9 Logout
 
-`POST /api/parent/logout` → revokes current token only.
+`POST /api/parent/logout` â†’ revokes current token only.
 
 ---
 
@@ -202,7 +202,7 @@ Request (any subset):
   "language": "ar"
 }
 ```
-`language` ∈ `en | ar`.
+`language` âˆˆ `en | ar`.
 
 ### 2.3 Change Password
 
@@ -261,7 +261,7 @@ Response `201`: `{ "message": "Child created.", "child": {...} }`
 ### 3.3 Show / Update / Delete
 
 - `GET /api/parent/children/{id}`
-- `PUT /api/parent/children/{id}` — any fields from create (optional `is_active`)
+- `PUT /api/parent/children/{id}` â€” any fields from create (optional `is_active`)
 - `DELETE /api/parent/children/{id}`
 
 ---
@@ -331,7 +331,7 @@ Each notification:
 
 ### 5.2 Unread Count
 
-`GET /api/parent/notifications/unread-count` → `{ "unread": 3 }`
+`GET /api/parent/notifications/unread-count` â†’ `{ "unread": 3 }`
 
 ### 5.3 Mark Read
 
@@ -412,7 +412,7 @@ The critical flow. A **session** is one play of a game; it contains many **trial
 ```json
 { "game_id": 1, "level": 2, "difficulty_level": "Hard" }
 ```
-`difficulty_level` ∈ `Easy | Medium | Hard` (default `Easy`).
+`difficulty_level` âˆˆ `Easy | Medium | Hard` (default `Easy`).
 
 Response `201`:
 ```json
@@ -450,16 +450,16 @@ Each trial is **one attempt inside the game**. Flutter should POST one of these 
 Field guide (all REQUIRED):
 | Field | Type | Description |
 |---|---|---|
-| `trial_number` | int ≥1 | Sequential within session. |
-| `task_type` | enum | `Tracking` `Discrimination` `Matching` `Orientation` — must match the game's `task_type`. |
+| `trial_number` | int â‰¥1 | Sequential within session. |
+| `task_type` | enum | `Tracking` `Discrimination` `Matching` `Orientation` â€” must match the game's `task_type`. |
 | `difficulty_level` | enum | `Easy` `Medium` `Hard`. |
 | `target_type` | enum | `Direction` `Color` `Shape` `Position`. |
-| `stimulus_count` | int 1–50 | How many items shown. |
-| `reaction_time_ms` | int ≥0 | Time from stimulus to answer. |
+| `stimulus_count` | int 1â€“50 | How many items shown. |
+| `reaction_time_ms` | int â‰¥0 | Time from stimulus to answer. |
 | `correct` | boolean | Final answer correct or not. |
-| `errors` | int ≥0 | Wrong clicks during the trial. |
-| `missed_targets` | int ≥0 | Targets not clicked by the child. |
-| `duration_sec` | int ≥0 | Total time spent on this trial. |
+| `errors` | int â‰¥0 | Wrong clicks during the trial. |
+| `missed_targets` | int â‰¥0 | Targets not clicked by the child. |
+| `duration_sec` | int â‰¥0 | Total time spent on this trial. |
 
 Response `201`: `{ "message": "Trial recorded.", "trial": {...} }`
 
@@ -468,7 +468,7 @@ Response `201`: `{ "message": "Trial recorded.", "trial": {...} }`
 `POST /api/child/sessions/{session_id}/end`
 
 No body. Laravel:
-1. Aggregates trial metrics (accuracy, avg RT, counts) → session row.
+1. Aggregates trial metrics (accuracy, avg RT, counts) â†’ session row.
 2. Sends all trials to the ML service `/plan`.
 3. Stores a `VisualPrediction`.
 4. If label is `Visual_Perception_Disorder`, creates a `visual_disorder_alert` notification for the parent.
@@ -532,7 +532,7 @@ Simple keyword-based replies (no external LLM).
 
 ### 9.1 History
 
-`GET /api/child/chatbot/history` → last 100 messages.
+`GET /api/child/chatbot/history` â†’ last 100 messages.
 
 ### 9.2 Send
 
@@ -564,10 +564,10 @@ Response:
 `Direction | Color | Shape | Position`
 
 ### Classes (ML output)
-- `Normal` → `status: "normal"`
-- `Visual_Perception_Disorder` → `status: "visual_disorder"` (triggers parent notification)
+- `Normal` â†’ `status: "normal"`
+- `Visual_Perception_Disorder` â†’ `status: "visual_disorder"` (triggers parent notification)
 
-### Skill → Exercises (used in training plan)
+### Skill â†’ Exercises (used in training plan)
 - Visual Tracking: Maze navigation, Follow-the-dot, Moving shape tracker
 - Visual Discrimination: Spot the difference, Odd-one-out, Color-shade matching
 - Visual Matching: Shape matcher, Pair matching puzzle, Pattern completion
@@ -607,8 +607,8 @@ php artisan migrate:fresh --seed --force
 ```
 
 **4. Health checks:**
-- `GET http://127.0.0.1:8000/api/health` → Laravel
-- `GET http://127.0.0.1:8001/health` → ML service + model accuracy
+- `GET http://127.0.0.1:8000/api/health` â†’ Laravel
+- `GET http://127.0.0.1:8001/health` â†’ ML service + model accuracy
 
 **Environment:**
 - `ML_SERVICE_URL` in `.env` points Laravel to the ML service (default `http://127.0.0.1:8001`).
@@ -623,5 +623,5 @@ php artisan migrate:fresh --seed --force
 3. **Emulator/device:** if the device cannot reach `127.0.0.1`, use your machine's LAN IP (e.g. `http://192.168.1.5:8000/api`) and run `php artisan serve --host=0.0.0.0`.
 4. **Trial submission cadence:** one POST per trial keeps the UX snappy and avoids losing data if the app crashes mid-game.
 5. **Session end UX:** show a "Analyzing your progress..." loader; ML round-trip is ~300-800 ms locally.
-6. **Error handling:** if `/sessions/{id}/end` returns without a `prediction` field (null), the ML service was unreachable — show a neutral completion screen and retry later via a background job (future work).
+6. **Error handling:** if `/sessions/{id}/end` returns without a `prediction` field (null), the ML service was unreachable â€” show a neutral completion screen and retry later via a background job (future work).
 7. **Pagination:** all list endpoints use standard Laravel pagination (`data`, `current_page`, `last_page`, `next_page_url`).

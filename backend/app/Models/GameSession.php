@@ -22,6 +22,10 @@ class GameSession extends Model
         'missed_count',
         'accuracy',
         'avg_reaction_time_ms',
+        'score',
+        'max_score',
+        'stars',
+        'result_payload',
         'status',
     ];
 
@@ -32,6 +36,7 @@ class GameSession extends Model
             'ended_at' => 'datetime',
             'accuracy' => 'float',
             'avg_reaction_time_ms' => 'float',
+            'result_payload' => 'array',
         ];
     }
 
@@ -50,8 +55,8 @@ class GameSession extends Model
         return $this->hasMany(SessionTrial::class, 'session_id');
     }
 
-    public function prediction(): BelongsTo
+    public function prediction(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->belongsTo(VisualPrediction::class, 'id', 'session_id');
+        return $this->hasOne(VisualPrediction::class, 'session_id');
     }
 }

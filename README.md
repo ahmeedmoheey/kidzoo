@@ -18,24 +18,33 @@ kidzoo app/
 └── README.md
 ```
 
-## Two Services
+## Services
 
 | Service | Port | Purpose |
 |---|---|---|
 | Laravel API | 8000 | Auth, children, games, sessions, dashboard, notifications |
-| FastAPI ML | 8001 | Classifies visual perception disorder from trial metrics |
+| FastAPI ML | 8001 | Optional external classifier for richer ML predictions |
 
-Flutter talks only to **Laravel**; Laravel proxies ML requests.
+Flutter talks only to **Laravel**.
+Laravel can either:
+- use the built-in local rule-based prediction flow, or
+- proxy prediction requests to the optional FastAPI ML service.
 
-## Start Everything
+## Start Locally
 
-**ML service:**
+**Backend only (recommended for quick setup):**
+```bash
+cd backend
+php artisan serve --host=127.0.0.1 --port=8000
+```
+
+**Optional ML service:**
 ```bash
 cd ml_service
 ./venv/Scripts/python.exe -m uvicorn api:app --host 127.0.0.1 --port 8001
 ```
 
-**Laravel:**
+**Laravel with external ML enabled:**
 ```bash
 cd backend
 php artisan serve --host=127.0.0.1 --port=8000
@@ -53,7 +62,7 @@ python -m venv venv
 # Laravel
 cd ../backend
 composer install
-cp .env.example .env                         # then edit APP_KEY, ML_SERVICE_URL
+cp .env.example .env                         # default is ML_SERVICE_MODE=local
 php artisan key:generate
 php artisan migrate:fresh --seed --force
 ```
@@ -77,4 +86,4 @@ Trained on `visual_perception_dataset.csv` (300 rows, 30 users, 4 task types):
 
 1. The `backend/` folder (this repo).
 2. `backend/API_DOCUMENTATION.md` — every endpoint, request/response, enum values, error format.
-3. `ml_service/` folder (only needed if they run the full stack locally).
+3. `ml_service/` folder (only needed if they want the optional external ML service).

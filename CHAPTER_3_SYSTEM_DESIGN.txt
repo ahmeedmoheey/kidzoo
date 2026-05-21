@@ -1,0 +1,372 @@
+Chapter 3: System Design
+
+3.2 System Architecture Design
+
+3.2.2 Backend Layer
+
+The backend layer of the KidZoo system was designed as a RESTful API using Laravel 12. This layer acts as the central coordinator between the client application, the database, and the artificial intelligence service. Its main responsibility is to receive requests, validate data, apply business rules, store and retrieve records, and return structured JSON responses.
+
+The backend design follows a modular structure based on controllers, models, services, routes, and database migrations. This design improves maintainability and allows each part of the system to handle a specific responsibility. Controllers manage incoming API requests, models represent database entities and relationships, services encapsulate reusable business logic, and routes define the available endpoints for parent and child users.
+
+From an architectural perspective, the backend is divided into two main API domains. The first is the Parent API, which handles registration, OTP-based email verification, login, password reset, profile management, child account management, dashboard retrieval, notifications, and chatbot communication. The second is the Child API, which handles child authentication, game retrieval, game session management, trial submission, session history, and chatbot interaction. This separation was intentionally designed to enforce role-based logic and simplify authorization.
+
+Authentication in the backend layer was designed using Laravel Sanctum. Parents and children both authenticate through token-based access, but each token is issued with role-specific abilities. This makes it possible to protect endpoints according to the user type and reduce the risk of unauthorized access. For parents, the design includes an OTP verification process for both account confirmation and password reset, which improves security and confirms email ownership before full access is granted.
+
+The backend also uses a service-oriented internal design. The `MlService` class was introduced to isolate communication with the AI service and to handle fallback prediction logic when the remote AI service is unavailable. The `ChatAiService` class was designed to encapsulate chatbot generation logic and to support more than one AI provider when configured. This service layer reduces controller complexity and makes the design easier to extend in the future.
+
+Another important design decision in the backend layer was the treatment of gameplay sessions. Instead of sending only final scores, the system stores every gameplay attempt as an individual trial. This design enables detailed behavioral analysis, supports later dashboard summaries, and provides richer input for the AI model. It also makes the system more flexible for future analytics and reporting features.
+
+Overall, the backend layer was designed to be secure, modular, and scalable. It connects the educational game flow with data storage, intelligent analysis, and parent monitoring functions, making it the core operational layer of the whole system.
+
+3.2.3 AI Module
+
+The AI module in KidZoo was designed as an independent microservice implemented with FastAPI in Python. Separating the AI module from the Laravel backend was an important architectural choice because it allowed machine learning logic to be isolated from the main application logic. This improved flexibility, made the AI service easier to update independently, and supported the use of Python machine learning libraries without affecting the backend framework.
+
+The AI module is responsible for receiving gameplay trial data, preprocessing the input, running model inference, and returning structured prediction outputs. The chosen model was Logistic Regression built with scikit-learn. This model was appropriate for the project because the available data is tabular and structured, and the classification task requires a lightweight and interpretable approach rather than a computationally expensive deep learning model.
+
+The module accepts trial-based features such as task type, difficulty level, target type, stimulus count, reaction time, correctness, errors, missed targets, and session duration. Before prediction, the data is encoded and normalized using the same preprocessing steps used during training. The model then estimates whether the child behavior pattern is closer to the Normal class or the Visual_Perception_Disorder class.
+
+The AI module was designed with more than one functional endpoint. The `/health` endpoint confirms that the service and model are available. The `/meta` endpoint provides valid categorical values and metadata required for correct integration. The `/predict` endpoint returns the predicted label and class probabilities. The `/plan` endpoint extends this result by identifying weak visual skill areas and generating a short training plan. This means the module does not only classify performance but also produces support-oriented recommendations.
+
+The AI design also includes skill mapping logic. Different game task types are mapped to visual abilities such as visual tracking, visual discrimination, visual matching, and spatial orientation. When low trial scores appear repeatedly in a certain category, that category is marked as weak, and suitable exercises are generated. This makes the AI output more meaningful for parents and aligns the prediction system with the educational goals of the project.
+
+To improve reliability, the integration design includes a fallback path inside the backend. If the AI microservice fails or becomes unreachable, the backend can still estimate results through local rule-based logic using thresholds related to accuracy, errors, missed targets, and reaction time. This design prevents total service interruption and ensures that the end-of-session workflow remains functional.
+
+The AI module therefore serves as the analytical intelligence layer of KidZoo. Its design transforms raw gameplay interaction into interpretable indicators, risk probabilities, weak skill categories, and suggested training guidance.
+
+3.3 Database Design
+
+The database of KidZoo was designed to support user management, gameplay tracking, AI prediction storage, notifications, and chatbot communication. The database structure follows a relational design in which the main entities are connected through foreign keys and one-to-many relationships. This design helps preserve data integrity and ensures that each child, gameplay session, prediction, and notification is linked to the correct parent account.
+
+The `users` table stores parent account information. It contains attributes such as name, email, password, phone number, avatar URL, preferred language, and email verification timestamp. This table represents the parent side of the platform and acts as the root entity for several related modules.
+
+The `children` table stores child profiles created by parents. Each child record is connected to a parent through the `parent_id` foreign key. The table includes the child name, username, password, age, gender, avatar, active status, and last login timestamp. This relationship allows one parent to manage multiple children while preserving clear ownership of records.
+
+The `games` table stores the educational games available in the system. Each game includes a slug, name, description, icon, task type, targeted visual skill, age range, total levels, and active status. This design supports age filtering and also connects each game to the visual skill category used later in the AI analysis.
+
+The `game_sessions` table stores one record for each gameplay session started by a child. It is linked to both the `children` and `games` tables. This table contains summary information such as difficulty level, level number, start time, end time, session duration, number of trials, number of correct answers, number of errors, number of missed targets, overall accuracy, average reaction time, and session status. The purpose of this table is to hold aggregated session-level performance.
+
+The `session_trials` table stores the detailed attempts performed within each session. Every trial belongs to one session through the `session_id` foreign key. The table stores the trial number, task type, difficulty level, target type, stimulus count, reaction time in milliseconds, correctness, errors, missed targets, and duration. This design is especially important because the AI model depends on detailed trial-level data rather than only final session summaries.
+
+The `visual_predictions` table stores the output of the AI analysis. Each prediction is linked to a child and may also be linked to a specific game session. The table stores the prediction status, label, confidence value, normal and disorder probabilities, weak skills, training plan, number of analyzed trials, and model version. This table makes it possible to keep a historical record of prediction results and display them later in the parent dashboard.
+
+The `app_notifications` table stores alert messages sent to the parent. Each notification belongs to a parent user and may reference a specific child. The table includes the notification type, title, body, additional JSON data, and read timestamp. Its purpose is to make sure that important outcomes, especially possible disorder alerts, are clearly communicated and trackable.
+
+The `chatbot_messages` table stores chatbot conversations. The table supports both parent-side and child-side chat by allowing either `user_id` or `child_id` to be associated with the message. Each record stores the sender role and message content with timestamps. This design allows a persistent conversation history to be maintained for both user types.
+
+The `email_otps` table was designed to support OTP-based verification and password reset. It stores the target email address, the one-time password code, its purpose, expiration time, and whether it has already been used. This table supports secure short-lived verification flows in the authentication process.
+
+From a relationship perspective, the database can be summarized as follows: one parent can have many children, one child can have many sessions, one game can have many sessions, one session can have many trials, and one child can have many predictions and chatbot messages. In addition, one parent can have many notifications and chatbot messages. This relational design supports both operational features and analytical processing.
+
+The database was designed with future extensibility in mind. Because session summaries and trial details are stored separately, the system can later support more advanced analytics, reporting, or retraining of the AI model using real gameplay data. As a result, the database design does not only support the current application flow, but also prepares the system for future development and research improvements.
+
+3.4 UML Diagrams
+
+3.4.1 Use Case
+
+The use case model of KidZoo was designed to show how the main actors interact with the system and how the major functional services are organized. The primary external actors in the system are the Parent and the Child. The Parent is responsible for account-related and monitoring functions, while the Child is responsible for gameplay interaction. Internally, the system also communicates with the AI Service, which acts as an analytical component that receives gameplay data and returns prediction results.
+
+The use case model helps clarify the functional boundaries of the project. It shows that the parent mainly interacts with account creation, child management, dashboard monitoring, notifications, and chatbot support, whereas the child interacts with login, game access, gameplay sessions, and chatbot messaging. The AI-related prediction process is triggered automatically by the system at the end of a game session.
+
+3.4.1.1 Use Case Diagram
+
+The following textual use case diagram summarizes the main interactions in the system:
+
+```plantuml
+@startuml
+left to right direction
+
+actor Parent
+actor Child
+actor "AI Service" as AI
+
+rectangle KidZoo {
+  usecase "Register Account" as UC1
+  usecase "Verify Email by OTP" as UC2
+  usecase "Login" as UC3
+  usecase "Manage Profile" as UC4
+  usecase "Manage Children" as UC5
+  usecase "View Dashboard" as UC6
+  usecase "View Notifications" as UC7
+  usecase "Chat with Bot" as UC8
+
+  usecase "Child Login" as UC9
+  usecase "View Games" as UC10
+  usecase "Start Session" as UC11
+  usecase "Submit Trial Data" as UC12
+  usecase "End Session" as UC13
+  usecase "Store Prediction" as UC14
+  usecase "Generate Alert" as UC15
+  usecase "Analyze Gameplay" as UC16
+}
+
+Parent --> UC1
+Parent --> UC2
+Parent --> UC3
+Parent --> UC4
+Parent --> UC5
+Parent --> UC6
+Parent --> UC7
+Parent --> UC8
+
+Child --> UC9
+Child --> UC10
+Child --> UC11
+Child --> UC12
+Child --> UC13
+Child --> UC8
+
+UC13 .> UC16 : <<include>>
+UC16 --> AI
+UC16 .> UC14 : <<include>>
+UC16 .> UC15 : <<extend>>
+@enduml
+```
+
+This diagram shows that the parent and child have different responsibilities in the system. It also shows that gameplay analysis is not a standalone user action, but an internal system use case triggered when the child finishes a session.
+
+3.4.1.2 Use Case Scenarios
+
+The following use case scenarios describe the most important system interactions in more detail.
+
+Use Case 1: Parent Registers and Verifies Account
+
+- Actor: Parent
+- Preconditions: The parent does not already have an account.
+- Main Flow:
+1. The parent enters name, email, password, and phone number.
+2. The system validates the submitted data.
+3. The system creates the parent account.
+4. The system generates and sends an OTP code.
+5. The parent enters the OTP code.
+6. The system verifies the OTP and activates the account.
+- Postconditions: The parent account becomes verified and ready for login.
+
+Use Case 2: Parent Adds a Child
+
+- Actor: Parent
+- Preconditions: The parent is logged in.
+- Main Flow:
+1. The parent opens the child management section.
+2. The parent enters child information such as name, username, password, age, and gender.
+3. The system validates the data.
+4. The system stores the child profile in the database.
+- Postconditions: A new child account is linked to the parent account.
+
+Use Case 3: Child Plays a Game Session
+
+- Actor: Child
+- Preconditions: The child is logged in and at least one game is available for the child age range.
+- Main Flow:
+1. The child selects a game.
+2. The system starts a new game session.
+3. During gameplay, the system records each trial separately.
+4. The child finishes the session.
+5. The system calculates aggregated session metrics.
+6. The system sends trial data to the AI service.
+7. The AI service returns prediction results.
+8. The system stores the prediction and updates the dashboard.
+- Postconditions: Session and prediction data are saved successfully.
+
+Use Case 4: Parent Views Dashboard and Notifications
+
+- Actor: Parent
+- Preconditions: The parent is logged in and the child has completed one or more sessions.
+- Main Flow:
+1. The parent opens the dashboard.
+2. The system retrieves child summaries, session history, and latest prediction.
+3. The parent reviews the dashboard information.
+4. If a possible disorder pattern was detected, the parent also receives a notification.
+- Postconditions: The parent can monitor the child performance and recent alerts.
+
+Use Case 5: Parent or Child Uses Chatbot
+
+- Actor: Parent or Child
+- Preconditions: The user is logged in.
+- Main Flow:
+1. The user opens the chatbot screen.
+2. The user sends a message.
+3. The system stores the message.
+4. The chatbot service generates a reply through AI integration or fallback logic.
+5. The system stores and returns the reply.
+- Postconditions: The conversation is saved and the user receives a response.
+
+3.4.2 Class Diagram
+
+The class diagram of KidZoo reflects the object-oriented structure of the backend. The core business entities are `User`, `Child`, `Game`, `GameSession`, `SessionTrial`, `VisualPrediction`, `AppNotification`, `ChatbotMessage`, and `EmailOtp`. In addition, service classes such as `MlService` and `ChatAiService` represent important processing components that encapsulate prediction and chatbot logic.
+
+The `User` class represents the parent and owns many children, notifications, and chatbot messages. The `Child` class belongs to one parent and owns many sessions, predictions, and chatbot messages. The `GameSession` class belongs to one child and one game, and it contains many `SessionTrial` records. The `VisualPrediction` class is linked to a child and optionally to a session. This relationship structure matches the logical flow of the application and supports both operational and analytical features.
+
+The following textual class diagram summarizes the main classes and relationships:
+
+```plantuml
+@startuml
+
+class User {
+  +id
+  +name
+  +email
+  +password
+  +phone
+  +language
+}
+
+class Child {
+  +id
+  +parent_id
+  +name
+  +username
+  +password
+  +age
+  +gender
+  +is_active
+}
+
+class Game {
+  +id
+  +slug
+  +name
+  +task_type
+  +skill
+  +min_age
+  +max_age
+}
+
+class GameSession {
+  +id
+  +child_id
+  +game_id
+  +difficulty_level
+  +level
+  +started_at
+  +ended_at
+  +accuracy
+  +avg_reaction_time_ms
+  +status
+}
+
+class SessionTrial {
+  +id
+  +session_id
+  +trial_number
+  +task_type
+  +difficulty_level
+  +target_type
+  +stimulus_count
+  +reaction_time_ms
+  +correct
+  +errors
+  +missed_targets
+  +duration_sec
+}
+
+class VisualPrediction {
+  +id
+  +child_id
+  +session_id
+  +status
+  +label
+  +confidence
+  +prob_normal
+  +prob_disorder
+  +weak_skills
+  +training_plan
+}
+
+class AppNotification {
+  +id
+  +user_id
+  +child_id
+  +type
+  +title
+  +body
+}
+
+class ChatbotMessage {
+  +id
+  +user_id
+  +child_id
+  +role
+  +message
+}
+
+class EmailOtp {
+  +id
+  +email
+  +otp
+  +purpose
+  +expires_at
+  +used_at
+}
+
+class MlService {
+  +health()
+  +predict()
+  +plan()
+  +fallbackPlan()
+}
+
+class ChatAiService {
+  +generateReply()
+}
+
+User "1" -- "0..*" Child
+User "1" -- "0..*" AppNotification
+User "1" -- "0..*" ChatbotMessage
+
+Child "1" -- "0..*" GameSession
+Child "1" -- "0..*" VisualPrediction
+Child "1" -- "0..*" ChatbotMessage
+
+Game "1" -- "0..*" GameSession
+GameSession "1" -- "0..*" SessionTrial
+GameSession "1" -- "0..1" VisualPrediction
+
+GameSession ..> MlService
+ChatbotMessage ..> ChatAiService
+
+@enduml
+```
+
+This class structure shows how the project combines domain entities with service classes. The domain entities handle persistent data, while the services provide behavioral logic such as AI communication and chatbot response generation.
+
+3.4.3 Sequence Diagram
+
+The sequence diagram focuses on the most important runtime interaction in the system, which is the completion of a child game session and the triggering of AI analysis. This sequence demonstrates how the client, backend, database, and AI service cooperate to produce the final result.
+
+When the child finishes a session, the client sends a request to the backend. The backend retrieves the recorded trials, computes summary values, stores session updates, and forwards the gameplay payload to the AI service. The AI service then performs prediction and returns the result. Finally, the backend stores the prediction in the database and optionally creates a parent notification if the result indicates a possible disorder pattern.
+
+The following textual sequence diagram represents this process:
+
+```plantuml
+@startuml
+actor Child
+participant "Client App" as App
+participant "Laravel Backend" as Backend
+database "Database" as DB
+participant "FastAPI AI Service" as AI
+
+Child -> App : Finish game session
+App -> Backend : POST /child/sessions/{id}/end
+Backend -> DB : Retrieve session trials
+DB --> Backend : Trials data
+
+Backend -> Backend : Calculate accuracy, errors,\nmissed targets, reaction time
+Backend -> DB : Update game session summary
+
+Backend -> AI : Send trial payload to /plan
+AI -> AI : Preprocess data and run model
+AI --> Backend : Prediction result + plan
+
+Backend -> DB : Store visual prediction
+
+alt Disorder detected
+  Backend -> DB : Create parent notification
+end
+
+Backend --> App : Session result + prediction
+App --> Child : Display session outcome
+@enduml
+```
+
+This sequence confirms that prediction is triggered automatically as part of session completion and that the system response depends on collaboration between several components. The sequence also reflects an important architectural idea in KidZoo, which is that AI analysis is fully integrated into the gameplay workflow rather than being treated as a separate manual process.
