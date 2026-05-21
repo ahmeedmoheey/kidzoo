@@ -282,6 +282,18 @@ Response:
     "total_trials": 58,
     "avg_accuracy": 76.5
   },
+  "dashboard_assessment": {
+    "status": "normal",
+    "severity": "good",
+    "title": "Looking Good!",
+    "label": "Normal Pattern",
+    "message": "Recent gameplay is showing healthy visual development patterns.",
+    "avg_accuracy": 76.5,
+    "recent_avg_accuracy": 81.3,
+    "latest_accuracy": 82.4,
+    "latest_game_name": "Shape Match",
+    "latest_score_text": "8/10"
+  },
   "latest_prediction": {
     "id": 7, "status": "normal", "label": "Normal",
     "confidence": 0.93, "prob_normal": 0.93, "prob_disorder": 0.07,
@@ -293,8 +305,22 @@ Response:
   ],
   "top_games": [
     {
-      "game_id": 1, "plays": 3, "avg_accuracy": 82.4,
+      "game_id": 1, "plays": 3, "avg_accuracy": 82.4, "score_text": "24/30",
       "game": { "id": 1, "slug": "shape-matcher", "name": "Shape Matcher", "icon_url": "/icons/games/shape-matcher.png" }
+    }
+  ],
+  "recent_history": [
+    {
+      "id": 15,
+      "game_name": "Shape Match",
+      "score_text": "8/10",
+      "accuracy": 80.0,
+      "accuracy_text": "80.00%",
+      "prediction": {
+        "status": "normal",
+        "label": "Normal",
+        "confidence": 0.93
+      }
     }
   ]
 }
